@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useData, VitalSigns } from '@/contexts/DataContext';
-import { useAuth } from '@/contexts/AuthContext';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import VitalsChart from '@/components/charts/VitalsChart';
-import ManualAlertDialog from '@/components/dashboard/ManualAlertDialog';
-import AlertControlPanel from '@/components/dashboard/AlertControlPanel';
-import DeleteBabyDialog from '@/components/dashboard/DeleteBabyDialog';
-import ApneaRiskWarning from '@/components/nicu/ApneaRiskWarning';
-import IncubatorEnvironment from '@/components/nicu/IncubatorEnvironment';
-import NeonatalRiskScore from '@/components/nicu/NeonatalRiskScore';
-import CryDetection from '@/components/nicu/CryDetection';
-import HistoricalReport from '@/components/nicu/HistoricalReport';
-import type { CryResult } from '@/components/nicu/CryDetection';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useData, VitalSigns } from "@/contexts/DataContext";
+import { useAuth } from "@/contexts/AuthContext";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import VitalsChart from "@/components/charts/VitalsChart";
+import ManualAlertDialog from "@/components/dashboard/ManualAlertDialog";
+import AlertControlPanel from "@/components/dashboard/AlertControlPanel";
+import DeleteBabyDialog from "@/components/dashboard/DeleteBabyDialog";
+import ApneaRiskWarning from "@/components/nicu/ApneaRiskWarning";
+import IncubatorEnvironment from "@/components/nicu/IncubatorEnvironment";
+import NeonatalRiskScore from "@/components/nicu/NeonatalRiskScore";
+import CryDetection from "@/components/nicu/CryDetection";
+import HistoricalReport from "@/components/nicu/HistoricalReport";
+import type { CryResult } from "@/components/nicu/CryDetection";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Heart,
@@ -37,8 +37,8 @@ import {
   Waves,
   Volume2,
   FileText,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const BabyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,7 +51,8 @@ const BabyDetail = () => {
   const baby = babies.find((b) => b.id === id);
   const babyAlerts = alerts.filter((a) => a.babyId === id && !a.acknowledged);
 
-  const isDoctorOrSenior = user?.role === 'doctor' || user?.role === 'senior_doctor';
+  const isDoctorOrSenior =
+    user?.role === "doctor" || user?.role === "senior_doctor";
 
   useEffect(() => {
     if (!id) return;
@@ -66,33 +67,43 @@ const BabyDetail = () => {
     return () => clearInterval(interval);
   }, [id, getVitalsHistory, getCurrentVitals]);
 
-  const getVitalStatus = (type: string, value: number): 'normal' | 'warning' | 'critical' => {
+  const getVitalStatus = (
+    type: string,
+    value: number,
+  ): "normal" | "warning" | "critical" => {
     switch (type) {
-      case 'heartRate':
-        if (value < 80 || value > 160) return 'critical';
-        if (value < 90 || value > 150) return 'warning';
-        return 'normal';
-      case 'respirationRate':
-        if (value < 30 || value > 60) return 'critical';
-        if (value < 35 || value > 55) return 'warning';
-        return 'normal';
-      case 'spo2':
-        if (value < 90) return 'critical';
-        if (value < 94) return 'warning';
-        return 'normal';
-      case 'temperature':
-        if (value < 36.0 || value > 37.5) return 'critical';
-        if (value < 36.2 || value > 37.3) return 'warning';
-        return 'normal';
+      case "heartRate":
+        if (value < 80 || value > 160) return "critical";
+        if (value < 90 || value > 150) return "warning";
+        return "normal";
+      case "respirationRate":
+        if (value < 30 || value > 60) return "critical";
+        if (value < 35 || value > 55) return "warning";
+        return "normal";
+      case "spo2":
+        if (value < 90) return "critical";
+        if (value < 94) return "warning";
+        return "normal";
+      case "temperature":
+        if (value < 36.0 || value > 37.5) return "critical";
+        if (value < 36.2 || value > 37.3) return "warning";
+        return "normal";
       default:
-        return 'normal';
+        return "normal";
     }
   };
 
-  const getPositionStatus = (position: string): 'normal' | 'warning' | 'critical' => {
-    if (position === 'prone') return 'critical';
-    if (position === 'side') return 'warning';
-    return 'normal';
+  const getPositionStatus = (
+    position: string,
+  ): "normal" | "warning" | "critical" => {
+    if (position === "prone") return "critical";
+    if (position === "side") return "warning";
+    return "normal";
+  };
+
+  const formatVitalValue = (type: string, value: number): string => {
+    if (type === "temperature") return value.toFixed(1);
+    return String(value);
   };
 
   if (!baby) {
@@ -102,8 +113,12 @@ const BabyDetail = () => {
           <div className="p-6 rounded-3xl bg-muted/50 mb-6">
             <AlertTriangle className="w-12 h-12 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Patient not found</h2>
-          <p className="text-muted-foreground mb-6">The requested patient record does not exist.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Patient not found
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            The requested patient record does not exist.
+          </p>
           <Link to="/dashboard">
             <Button className="gap-2 btn-medical rounded-xl h-11">
               <ArrowLeft className="w-4 h-4" />
@@ -116,12 +131,14 @@ const BabyDetail = () => {
   }
 
   const statusConfig = {
-    critical: { variant: 'critical' as const, label: 'Critical' },
-    high: { variant: 'warning' as const, label: 'High Priority' },
-    normal: { variant: 'normal' as const, label: 'Stable' }
+    critical: { variant: "critical" as const, label: "Critical" },
+    high: { variant: "warning" as const, label: "High Priority" },
+    normal: { variant: "normal" as const, label: "Stable" },
   };
 
-  const status = statusConfig[baby.status as keyof typeof statusConfig] || statusConfig.normal;
+  const status =
+    statusConfig[baby.status as keyof typeof statusConfig] ||
+    statusConfig.normal;
 
   return (
     <DashboardLayout>
@@ -129,24 +146,38 @@ const BabyDetail = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link to="/dashboard">
-              <Button variant="ghost" size="icon" className="rounded-xl hover:bg-muted h-11 w-11">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl hover:bg-muted h-11 w-11"
+              >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div className="flex items-center gap-4">
-              <div className={cn(
-                'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg',
-                baby.status === 'critical' ? 'bg-status-critical' :
-                baby.status === 'high' ? 'bg-status-warning' : 'gradient-primary'
-              )}>
+              <div
+                className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg",
+                  baby.status === "critical"
+                    ? "bg-status-critical"
+                    : baby.status === "high"
+                      ? "bg-status-warning"
+                      : "gradient-primary",
+                )}
+              >
                 <span className="text-2xl font-bold text-primary-foreground">
                   {baby.name.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl font-bold text-foreground">{baby.name}</h1>
-                  <Badge variant={status.variant} className="font-semibold shadow-sm">
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {baby.name}
+                  </h1>
+                  <Badge
+                    variant={status.variant}
+                    className="font-semibold shadow-sm"
+                  >
                     {status.label}
                   </Badge>
                   {!baby.alertsEnabled && (
@@ -157,24 +188,27 @@ const BabyDetail = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-muted-foreground">
                   <Bed className="w-4 h-4" />
-                  <span className="text-sm font-medium">Bed {baby.bedNumber}</span>
+                  <span className="text-sm font-medium">
+                    Bed {baby.bedNumber}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3 flex-wrap">
-            <ManualAlertDialog 
-              babyId={baby.id} 
-              babyName={baby.name} 
-              bedNumber={baby.bedNumber} 
+
+          <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap lg:justify-end">
+            <ManualAlertDialog
+              babyId={baby.id}
+              babyName={baby.name}
+              bedNumber={baby.bedNumber}
             />
             <DeleteBabyDialog babyId={baby.id} babyName={baby.name} />
             {babyAlerts.length > 0 && (
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-status-critical-bg border border-status-critical/30 alert-pulse">
                 <AlertTriangle className="w-5 h-5 text-status-critical" />
                 <span className="font-bold text-status-critical">
-                  {babyAlerts.length} Active Alert{babyAlerts.length !== 1 ? 's' : ''}
+                  {babyAlerts.length} Active Alert
+                  {babyAlerts.length !== 1 ? "s" : ""}
                 </span>
               </div>
             )}
@@ -185,125 +219,189 @@ const BabyDetail = () => {
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               {
-                type: 'heartRate',
-                label: 'Heart Rate',
+                type: "heartRate",
+                label: "Heart Rate",
                 value: currentVitals.heartRate,
-                unit: 'bpm',
-                normal: '80-160 bpm',
+                unit: "bpm",
+                normal: "80-160 bpm",
                 icon: Heart,
-                colorClass: 'text-chart-heart',
-                bgClass: 'bg-chart-heart/10',
+                colorClass: "text-chart-heart",
+                bgClass: "bg-chart-heart/10",
               },
               {
-                type: 'respirationRate',
-                label: 'Resp Rate',
+                type: "respirationRate",
+                label: "Resp Rate",
                 value: currentVitals.respirationRate,
-                unit: '/min',
-                normal: '30-60 /min',
+                unit: "/min",
+                normal: "30-60 /min",
                 icon: Waves,
-                colorClass: 'text-chart-spo2',
-                bgClass: 'bg-chart-spo2/10',
+                colorClass: "text-chart-spo2",
+                bgClass: "bg-chart-spo2/10",
               },
               {
-                type: 'spo2',
-                label: 'SpO₂',
+                type: "spo2",
+                label: "SpO₂",
                 value: currentVitals.spo2,
-                unit: '%',
-                normal: '94-100%',
+                unit: "%",
+                normal: "94-100%",
                 icon: Wind,
-                colorClass: 'text-chart-movement',
-                bgClass: 'bg-chart-movement/10',
+                colorClass: "text-chart-movement",
+                bgClass: "bg-chart-movement/10",
               },
               {
-                type: 'temperature',
-                label: 'Temperature',
+                type: "temperature",
+                label: "Temperature",
                 value: currentVitals.temperature,
-                unit: '°C',
-                normal: '36.0-37.5°C',
+                unit: "°C",
+                normal: "36.0-37.5°C",
                 icon: Thermometer,
-                colorClass: 'text-chart-temp',
-                bgClass: 'bg-chart-temp/10',
+                colorClass: "text-chart-temp",
+                bgClass: "bg-chart-temp/10",
               },
             ].map((vital) => {
               const Icon = vital.icon;
               const vitalStatus = getVitalStatus(vital.type, vital.value);
-              
+
               return (
-                <Card 
+                <Card
                   key={vital.type}
                   className={cn(
-                    'card-medical overflow-hidden relative',
-                    vitalStatus === 'critical' && 'ring-2 ring-status-critical alert-pulse',
-                    vitalStatus === 'warning' && 'ring-2 ring-status-warning'
+                    "card-medical overflow-hidden relative",
+                    vitalStatus === "critical" &&
+                      "ring-2 ring-status-critical alert-pulse",
+                    vitalStatus === "warning" && "ring-2 ring-status-warning",
                   )}
                 >
-                  <div className={cn(
-                    'absolute top-0 left-0 right-0 h-1',
-                    vitalStatus === 'critical' ? 'bg-status-critical' :
-                    vitalStatus === 'warning' ? 'bg-status-warning' : 'gradient-primary'
-                  )} />
+                  <div
+                    className={cn(
+                      "absolute top-0 left-0 right-0 h-1",
+                      vitalStatus === "critical"
+                        ? "bg-status-critical"
+                        : vitalStatus === "warning"
+                          ? "bg-status-warning"
+                          : "gradient-primary",
+                    )}
+                  />
                   <CardContent className="p-5 pt-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className={cn(
-                        'p-3 rounded-xl shadow-sm',
-                        vitalStatus === 'critical' ? 'bg-status-critical-bg' :
-                        vitalStatus === 'warning' ? 'bg-status-warning-bg' : vital.bgClass
-                      )}>
-                        <Icon className={cn(
-                          'w-5 h-5',
-                          vitalStatus === 'critical' ? 'text-status-critical' :
-                          vitalStatus === 'warning' ? 'text-status-warning' : vital.colorClass
-                        )} />
+                      <div
+                        className={cn(
+                          "p-3 rounded-xl shadow-sm",
+                          vitalStatus === "critical"
+                            ? "bg-status-critical-bg"
+                            : vitalStatus === "warning"
+                              ? "bg-status-warning-bg"
+                              : vital.bgClass,
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "w-5 h-5",
+                            vitalStatus === "critical"
+                              ? "text-status-critical"
+                              : vitalStatus === "warning"
+                                ? "text-status-warning"
+                                : vital.colorClass,
+                          )}
+                        />
                       </div>
-                      <span className="text-sm font-semibold text-muted-foreground">{vital.label}</span>
+                      <span className="text-sm font-semibold text-muted-foreground">
+                        {vital.label}
+                      </span>
                     </div>
-                    <p className={cn(
-                      'text-4xl font-bold tabular-nums',
-                      vitalStatus === 'critical' ? 'text-status-critical' :
-                      vitalStatus === 'warning' ? 'text-status-warning' : 'text-foreground'
-                    )}>
-                      {vital.value}
-                      <span className="text-sm font-medium text-muted-foreground ml-1">{vital.unit}</span>
+                    <p
+                      className={cn(
+                        "text-4xl font-bold tabular-nums",
+                        vitalStatus === "critical"
+                          ? "text-status-critical"
+                          : vitalStatus === "warning"
+                            ? "text-status-warning"
+                            : "text-foreground",
+                      )}
+                    >
+                      {formatVitalValue(vital.type, vital.value)}
+                      <span className="text-sm font-medium text-muted-foreground ml-1">
+                        {vital.unit}
+                      </span>
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2 font-medium">Normal: {vital.normal}</p>
+                    <p className="text-xs text-muted-foreground mt-2 font-medium">
+                      Normal: {vital.normal}
+                    </p>
                   </CardContent>
                 </Card>
               );
             })}
 
-            <Card className={cn(
-              'card-medical overflow-hidden relative',
-              getPositionStatus(currentVitals.sleepingPosition) === 'critical' && 'ring-2 ring-status-critical alert-pulse',
-              getPositionStatus(currentVitals.sleepingPosition) === 'warning' && 'ring-2 ring-status-warning'
-            )}>
-              <div className={cn(
-                'absolute top-0 left-0 right-0 h-1',
-                getPositionStatus(currentVitals.sleepingPosition) === 'critical' ? 'bg-status-critical' :
-                getPositionStatus(currentVitals.sleepingPosition) === 'warning' ? 'bg-status-warning' : 'gradient-primary'
-              )} />
+            <Card
+              className={cn(
+                "card-medical overflow-hidden relative",
+                getPositionStatus(currentVitals.sleepingPosition) ===
+                  "critical" && "ring-2 ring-status-critical alert-pulse",
+                getPositionStatus(currentVitals.sleepingPosition) ===
+                  "warning" && "ring-2 ring-status-warning",
+              )}
+            >
+              <div
+                className={cn(
+                  "absolute top-0 left-0 right-0 h-1",
+                  getPositionStatus(currentVitals.sleepingPosition) ===
+                    "critical"
+                    ? "bg-status-critical"
+                    : getPositionStatus(currentVitals.sleepingPosition) ===
+                        "warning"
+                      ? "bg-status-warning"
+                      : "gradient-primary",
+                )}
+              />
               <CardContent className="p-5 pt-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={cn(
-                    'p-3 rounded-xl shadow-sm',
-                    getPositionStatus(currentVitals.sleepingPosition) === 'critical' ? 'bg-status-critical-bg' :
-                    getPositionStatus(currentVitals.sleepingPosition) === 'warning' ? 'bg-status-warning-bg' : 'bg-primary/10'
-                  )}>
-                    <User className={cn(
-                      'w-5 h-5',
-                      getPositionStatus(currentVitals.sleepingPosition) === 'critical' ? 'text-status-critical' :
-                      getPositionStatus(currentVitals.sleepingPosition) === 'warning' ? 'text-status-warning' : 'text-primary'
-                    )} />
+                  <div
+                    className={cn(
+                      "p-3 rounded-xl shadow-sm",
+                      getPositionStatus(currentVitals.sleepingPosition) ===
+                        "critical"
+                        ? "bg-status-critical-bg"
+                        : getPositionStatus(currentVitals.sleepingPosition) ===
+                            "warning"
+                          ? "bg-status-warning-bg"
+                          : "bg-primary/10",
+                    )}
+                  >
+                    <User
+                      className={cn(
+                        "w-5 h-5",
+                        getPositionStatus(currentVitals.sleepingPosition) ===
+                          "critical"
+                          ? "text-status-critical"
+                          : getPositionStatus(
+                                currentVitals.sleepingPosition,
+                              ) === "warning"
+                            ? "text-status-warning"
+                            : "text-primary",
+                      )}
+                    />
                   </div>
-                  <span className="text-sm font-semibold text-muted-foreground">Position</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Position
+                  </span>
                 </div>
-                <p className={cn(
-                  'text-3xl font-bold capitalize',
-                  getPositionStatus(currentVitals.sleepingPosition) === 'critical' ? 'text-status-critical' :
-                  getPositionStatus(currentVitals.sleepingPosition) === 'warning' ? 'text-status-warning' : 'text-foreground'
-                )}>
+                <p
+                  className={cn(
+                    "text-3xl font-bold capitalize",
+                    getPositionStatus(currentVitals.sleepingPosition) ===
+                      "critical"
+                      ? "text-status-critical"
+                      : getPositionStatus(currentVitals.sleepingPosition) ===
+                          "warning"
+                        ? "text-status-warning"
+                        : "text-foreground",
+                  )}
+                >
                   {currentVitals.sleepingPosition}
                 </p>
-                <p className="text-xs text-muted-foreground mt-2 font-medium">Recommended: Back</p>
+                <p className="text-xs text-muted-foreground mt-2 font-medium">
+                  Recommended: Back
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -311,15 +409,24 @@ const BabyDetail = () => {
 
         <Tabs defaultValue="vitals" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="vitals" className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="vitals"
+              className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               <BarChart3 className="w-4 h-4" />
               Vitals History
             </TabsTrigger>
-            <TabsTrigger value="info" className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="info"
+              className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               <User className="w-4 h-4" />
               Patient Info
             </TabsTrigger>
-            <TabsTrigger value="alerts" className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="alerts"
+              className="gap-2 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               <Settings2 className="w-4 h-4" />
               Alert Settings
             </TabsTrigger>
@@ -366,10 +473,15 @@ const BabyDetail = () => {
                 <h3 className="text-lg font-bold text-foreground flex items-center gap-2 pt-2">
                   <Shield className="w-5 h-5 text-primary" />
                   Advanced Monitoring
-                  <Badge variant="secondary" className="text-xs">Doctor View</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Doctor View
+                  </Badge>
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <ApneaRiskWarning vitalsHistory={vitalsHistory} currentVitals={currentVitals} />
+                  <ApneaRiskWarning
+                    vitalsHistory={vitalsHistory}
+                    currentVitals={currentVitals}
+                  />
                   <IncubatorEnvironment babyId={baby.id} />
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -378,14 +490,20 @@ const BabyDetail = () => {
                     cryResult={cryResult}
                   />
                   <div className="space-y-4">
-                    <CryDetection showConfidence onResultChange={setCryResult} />
+                    <CryDetection
+                      showConfidence
+                      onResultChange={setCryResult}
+                    />
                   </div>
                 </div>
               </>
             )}
 
             {!isDoctorOrSenior && (
-              <CryDetection showConfidence={false} onResultChange={setCryResult} />
+              <CryDetection
+                showConfidence={false}
+                onResultChange={setCryResult}
+              />
             )}
 
             <HistoricalReport
@@ -410,21 +528,40 @@ const BabyDetail = () => {
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
                   {[
-                    { icon: Bed, label: 'Bed Number', value: baby.bedNumber },
-                    { icon: Calendar, label: 'Date of Birth', value: baby.dateOfBirth },
-                    { icon: Clock, label: 'Time of Birth', value: baby.timeOfBirth },
-                    { icon: Users, label: 'Parents', value: baby.parentNames },
-                    { icon: Phone, label: 'Contact', value: baby.parentContact },
+                    { icon: Bed, label: "Bed Number", value: baby.bedNumber },
+                    {
+                      icon: Calendar,
+                      label: "Date of Birth",
+                      value: baby.dateOfBirth,
+                    },
+                    {
+                      icon: Clock,
+                      label: "Time of Birth",
+                      value: baby.timeOfBirth,
+                    },
+                    { icon: Users, label: "Parents", value: baby.parentNames },
+                    {
+                      icon: Phone,
+                      label: "Contact",
+                      value: baby.parentContact,
+                    },
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.label} className="flex items-center gap-4 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div
+                        key={item.label}
+                        className="flex items-center gap-4 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                      >
                         <div className="p-2.5 rounded-xl bg-muted">
                           <Icon className="w-4 h-4 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
-                          <p className="font-semibold text-foreground">{item.value}</p>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {item.label}
+                          </p>
+                          <p className="font-semibold text-foreground">
+                            {item.value}
+                          </p>
                         </div>
                       </div>
                     );
@@ -445,38 +582,65 @@ const BabyDetail = () => {
                   {baby.behaviorBaseline ? (
                     <>
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                        <span className="text-sm font-medium text-muted-foreground">Baseline Status</span>
-                        <Badge variant={baby.behaviorBaseline.isBaselineEstablished ? 'normal' : 'secondary'} className="font-semibold">
-                          {baby.behaviorBaseline.isBaselineEstablished ? '✓ Established' : 'Learning...'}
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Baseline Status
+                        </span>
+                        <Badge
+                          variant={
+                            baby.behaviorBaseline.isBaselineEstablished
+                              ? "normal"
+                              : "secondary"
+                          }
+                          className="font-semibold"
+                        >
+                          {baby.behaviorBaseline.isBaselineEstablished
+                            ? "✓ Established"
+                            : "Learning..."}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                        <span className="text-sm font-medium text-muted-foreground">Days Tracked</span>
-                        <span className="font-bold text-foreground">{baby.behaviorBaseline.daysTracked} / 4 days</span>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Days Tracked
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {baby.behaviorBaseline.daysTracked} / 4 days
+                        </span>
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                        <span className="text-sm font-medium text-muted-foreground">Avg Movement</span>
-                        <span className="font-bold text-foreground">{baby.behaviorBaseline.avgMovement}%</span>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Avg Movement
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {baby.behaviorBaseline.avgMovement}%
+                        </span>
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                        <span className="text-sm font-medium text-muted-foreground">Avg Heart Rate</span>
-                        <span className="font-bold text-foreground">{baby.behaviorBaseline.avgHeartRate} bpm</span>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Avg Heart Rate
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {baby.behaviorBaseline.avgHeartRate} bpm
+                        </span>
                       </div>
-                      
+
                       <div className="pt-4 border-t border-border/50">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Sleep Pattern</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                          Sleep Pattern
+                        </p>
                         <div className="flex gap-2">
-                          {baby.behaviorBaseline.sleepPatterns.map((pattern, index) => (
-                            <div 
-                              key={index}
-                              className="flex-1 h-16 rounded-xl bg-primary/10 relative overflow-hidden"
-                            >
-                              <div 
-                                className="absolute bottom-0 left-0 right-0 gradient-primary transition-all rounded-b-xl"
-                                style={{ height: `${pattern}%` }}
-                              />
-                            </div>
-                          ))}
+                          {baby.behaviorBaseline.sleepPatterns.map(
+                            (pattern, index) => (
+                              <div
+                                key={index}
+                                className="flex-1 h-16 rounded-xl bg-primary/10 relative overflow-hidden"
+                              >
+                                <div
+                                  className="absolute bottom-0 left-0 right-0 gradient-primary transition-all rounded-b-xl"
+                                  style={{ height: `${pattern}%` }}
+                                />
+                              </div>
+                            ),
+                          )}
                         </div>
                       </div>
                     </>
@@ -485,7 +649,9 @@ const BabyDetail = () => {
                       <div className="p-5 rounded-2xl bg-muted mb-4">
                         <TrendingUp className="w-10 h-10 text-muted-foreground" />
                       </div>
-                      <p className="text-sm font-semibold text-foreground">Not Initialized</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Not Initialized
+                      </p>
                       <p className="text-xs text-muted-foreground text-center mt-1">
                         Behavior tracking will begin shortly
                       </p>

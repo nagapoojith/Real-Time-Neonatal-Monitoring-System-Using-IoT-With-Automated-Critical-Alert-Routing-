@@ -418,10 +418,10 @@
   /* ── Unified card hover behavior ── */
   :is(.card-medical, .stat-card, .vital-card) {
     transition:
-      transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+      transform 420ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      box-shadow 520ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      border-color 480ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      background-color 480ms cubic-bezier(0.25, 0.8, 0.25, 1);
     will-change: transform;
     transform: translate3d(0, 0, 0);
     transform-origin: center;
@@ -434,6 +434,10 @@
 
   .alert-section :is(.card-medical, .stat-card, .vital-card):hover {
     transform: translate3d(0, -1px, 0) scale(1.004);
+  }
+
+  .card-medical.no-hover-grow:hover {
+    transform: translate3d(0, 0, 0) scale(1) !important;
   }
 
   .dark .stat-card {
@@ -493,10 +497,10 @@
 
   .alert-card {
     transition:
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+      transform 360ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      box-shadow 520ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      border-color 460ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      background-color 460ms cubic-bezier(0.25, 0.8, 0.25, 1);
     will-change: transform;
     transform: translate3d(0, 0, 0);
   }
@@ -665,11 +669,11 @@
   }
 
   .dark .hover-glow-flicker-critical:hover {
-    animation: hover-glow-flicker-critical 1.1s ease-in-out infinite;
+    animation: hover-glow-flicker-critical 2.4s ease-in-out infinite;
   }
 
   .alert-pulse {
-    animation: alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: alert-pulse 3.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
   }
 
   .live-indicator {
@@ -822,40 +826,46 @@
   .glow-hover-normal {
     transition:
       transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 560ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 760ms cubic-bezier(0.19, 1, 0.22, 1),
       border-color 420ms cubic-bezier(0.16, 1, 0.3, 1),
       background 440ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .dark .glow-hover-primary {
+    --glow-rgb: 59, 130, 246;
     box-shadow:
-      0 0 10px rgba(59, 130, 246, 0.14),
-      0 0 22px rgba(59, 130, 246, 0.08);
+      inset 0 0 0 1px rgba(59, 130, 246, 0.18),
+      0 0 0 0 rgba(59, 130, 246, 0);
   }
 
   .dark .glow-hover-critical {
+    --glow-rgb: 255, 0, 60;
     box-shadow:
-      0 0 10px rgba(255, 0, 60, 0.12),
-      0 0 22px rgba(255, 0, 60, 0.06);
+      inset 0 0 0 1px rgba(255, 64, 96, 0.2),
+      0 0 0 0 rgba(255, 0, 60, 0);
   }
 
   .dark .glow-hover-warning {
+    --glow-rgb: 255, 170, 0;
     box-shadow:
-      0 0 10px rgba(255, 170, 0, 0.11),
-      0 0 22px rgba(255, 170, 0, 0.05);
+      inset 0 0 0 1px rgba(255, 170, 0, 0.2),
+      0 0 0 0 rgba(255, 170, 0, 0);
   }
 
   .dark .glow-hover-normal {
+    --glow-rgb: 0, 255, 136;
     box-shadow:
-      0 0 10px rgba(0, 255, 136, 0.1),
-      0 0 22px rgba(0, 255, 136, 0.05);
+      inset 0 0 0 1px rgba(0, 255, 136, 0.2),
+      0 0 0 0 rgba(0, 255, 136, 0);
   }
 
   .dark .glow-hover-primary:hover {
+    animation: glow-spread-in 760ms cubic-bezier(0.19, 1, 0.22, 1) both;
     box-shadow:
-      0 0 18px rgba(59, 130, 246, 0.34),
-      0 0 40px rgba(59, 130, 246, 0.2),
-      0 0 70px rgba(59, 130, 246, 0.1);
+      inset 0 0 0 1px rgba(59, 130, 246, 0.38),
+      0 0 14px rgba(59, 130, 246, 0.28),
+      0 0 34px rgba(59, 130, 246, 0.16),
+      0 0 64px rgba(59, 130, 246, 0.08);
     border-color: rgba(59, 130, 246, 0.56);
     background: linear-gradient(
       180deg,
@@ -865,7 +875,12 @@
   }
 
   .dark .glow-hover-critical:hover {
-    box-shadow: var(--glow-critical);
+    animation: glow-spread-in 760ms cubic-bezier(0.19, 1, 0.22, 1) both;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 64, 96, 0.44),
+      0 0 14px rgba(255, 0, 60, 0.28),
+      0 0 34px rgba(255, 0, 60, 0.16),
+      0 0 64px rgba(255, 0, 60, 0.08);
     border-color: rgba(255, 64, 96, 0.62);
     background: linear-gradient(
       180deg,
@@ -875,7 +890,12 @@
   }
 
   .dark .glow-hover-warning:hover {
-    box-shadow: var(--glow-warning);
+    animation: glow-spread-in 760ms cubic-bezier(0.19, 1, 0.22, 1) both;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 170, 0, 0.42),
+      0 0 14px rgba(255, 170, 0, 0.25),
+      0 0 34px rgba(255, 170, 0, 0.14),
+      0 0 64px rgba(255, 170, 0, 0.07);
     border-color: rgba(255, 170, 0, 0.56);
     background: linear-gradient(
       180deg,
@@ -885,7 +905,12 @@
   }
 
   .dark .glow-hover-normal:hover {
-    box-shadow: var(--glow-normal);
+    animation: glow-spread-in 760ms cubic-bezier(0.19, 1, 0.22, 1) both;
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 255, 136, 0.38),
+      0 0 14px rgba(0, 255, 136, 0.24),
+      0 0 34px rgba(0, 255, 136, 0.14),
+      0 0 64px rgba(0, 255, 136, 0.07);
     border-color: rgba(0, 255, 136, 0.5);
     background: linear-gradient(
       180deg,
@@ -1275,8 +1300,30 @@
   }
 }
 
+@keyframes glow-spread-in {
+  from {
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--glow-rgb), 0.18),
+      0 0 0 0 rgba(var(--glow-rgb), 0);
+  }
+  45% {
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--glow-rgb), 0.28),
+      0 0 8px rgba(var(--glow-rgb), 0.16),
+      0 0 20px rgba(var(--glow-rgb), 0.09),
+      0 0 36px rgba(var(--glow-rgb), 0.04);
+  }
+  to {
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--glow-rgb), 0.38),
+      0 0 14px rgba(var(--glow-rgb), 0.24),
+      0 0 34px rgba(var(--glow-rgb), 0.14),
+      0 0 64px rgba(var(--glow-rgb), 0.07);
+  }
+}
+
 .animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+  animation: glow-pulse 3.6s ease-in-out infinite;
 }
 
 /* ── Border glow for critical elements ── */

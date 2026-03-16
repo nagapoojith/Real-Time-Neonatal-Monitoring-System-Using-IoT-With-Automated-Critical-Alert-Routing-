@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +9,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertTriangle, Bell, AlertCircle, Send, Sparkles, Heart, Thermometer, Activity, Mail } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertTriangle,
+  Bell,
+  AlertCircle,
+  Send,
+  Sparkles,
+  Heart,
+  Thermometer,
+  Activity,
+  Mail,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ManualAlertDialogProps {
   babyId: string;
@@ -24,7 +34,7 @@ interface ManualAlertDialogProps {
   bedNumber: string;
 }
 
-type AlertType = 'normal' | 'high' | 'critical';
+type AlertType = "normal" | "high" | "critical";
 
 interface Vitals {
   heartRate?: number;
@@ -47,8 +57,8 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
 }) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [alertType, setAlertType] = useState<AlertType>('normal');
-  const [reason, setReason] = useState('');
+  const [alertType, setAlertType] = useState<AlertType>("normal");
+  const [reason, setReason] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [vitals, setVitals] = useState<Vitals | null>(null);
   const [loadingVitals, setLoadingVitals] = useState(false);
@@ -56,7 +66,10 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
   const [sendToAll, setSendToAll] = useState(true);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
 
-  const canSendAlert = user?.role === 'doctor' || user?.role === 'nurse' || user?.role === 'senior_doctor';
+  const canSendAlert =
+    user?.role === "doctor" ||
+    user?.role === "nurse" ||
+    user?.role === "senior_doctor";
 
   useEffect(() => {
     if (open && babyId) {
@@ -69,10 +82,10 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
     setLoadingVitals(true);
     try {
       const { data, error } = await supabase
-        .from('vitals')
-        .select('heart_rate, spo2, temperature, movement, sleeping_position')
-        .eq('baby_id', babyId)
-        .order('recorded_at', { ascending: false })
+        .from("vitals")
+        .select("heart_rate, spo2, temperature, movement, sleeping_position")
+        .eq("baby_id", babyId)
+        .order("recorded_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -82,11 +95,11 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
           spo2: data.spo2,
           temperature: data.temperature,
           movement: data.movement || undefined,
-          sleepingPosition: data.sleeping_position || 'back',
+          sleepingPosition: data.sleeping_position || "back",
         });
       }
     } catch (error) {
-      console.error('Error fetching vitals:', error);
+      console.error("Error fetching vitals:", error);
     } finally {
       setLoadingVitals(false);
     }
@@ -95,17 +108,17 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
   const fetchRecipients = async () => {
     try {
       const { data, error } = await supabase
-        .from('alert_recipients')
-        .select('id, email, recipient_name')
-        .eq('baby_id', babyId)
-        .eq('is_active', true);
+        .from("alert_recipients")
+        .select("id, email, recipient_name")
+        .eq("baby_id", babyId)
+        .eq("is_active", true);
 
       if (data && !error) {
         setRecipients(data);
-        setSelectedRecipients(data.map(r => r.email));
+        setSelectedRecipients(data.map((r) => r.email));
       }
     } catch (error) {
-      console.error('Error fetching recipients:', error);
+      console.error("Error fetching recipients:", error);
     }
   };
 
@@ -114,32 +127,38 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
   }
 
   const handleRecipientToggle = (email: string) => {
-    setSelectedRecipients(prev => 
-      prev.includes(email) 
-        ? prev.filter(e => e !== email)
-        : [...prev, email]
+    setSelectedRecipients((prev) =>
+      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email],
     );
   };
 
   const handleSendAlert = async () => {
     if (!reason.trim()) {
-      toast.error('Please enter a reason for the alert');
+      toast.error("Please enter a reason for the alert");
       return;
     }
 
     let emailTargets: string[] = [];
     if (sendToAll) {
-      emailTargets = recipients.length > 0 
-        ? recipients.map(r => r.email)
-        : (user?.email ? [user.email] : []);
+      emailTargets =
+        recipients.length > 0
+          ? recipients.map((r) => r.email)
+          : user?.email
+            ? [user.email]
+            : [];
     } else {
-      emailTargets = selectedRecipients.length > 0 
-        ? selectedRecipients 
-        : (user?.email ? [user.email] : []);
+      emailTargets =
+        selectedRecipients.length > 0
+          ? selectedRecipients
+          : user?.email
+            ? [user.email]
+            : [];
     }
 
     if (emailTargets.length === 0) {
-      toast.error('No recipients available. Please add recipients in Alert Settings.');
+      toast.error(
+        "No recipients available. Please add recipients in Alert Settings.",
+      );
       return;
     }
 
@@ -147,7 +166,7 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
 
     try {
       const { data: alertData, error: alertError } = await supabase
-        .from('alerts')
+        .from("alerts")
         .insert({
           baby_id: babyId,
           alert_type: alertType,
@@ -164,19 +183,22 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
 
       const emailPromises = emailTargets.map(async (recipientEmail) => {
         try {
-          const { error } = await supabase.functions.invoke('send-alert-email', {
-            body: {
-              to: recipientEmail,
-              babyName,
-              babyId,
-              bedNumber,
-              alertType,
-              message: `Manual Alert: ${reason}`,
-              triggerReason: reason,
-              timestamp: new Date().toLocaleString(),
-              vitals: vitals || undefined,
+          const { error } = await supabase.functions.invoke(
+            "send-alert-email",
+            {
+              body: {
+                to: recipientEmail,
+                babyName,
+                babyId,
+                bedNumber,
+                alertType,
+                message: `Manual Alert: ${reason}`,
+                triggerReason: reason,
+                timestamp: new Date().toLocaleString(),
+                vitals: vitals || undefined,
+              },
             },
-          });
+          );
 
           if (error) {
             console.error(`Email to ${recipientEmail} failed:`, error);
@@ -190,25 +212,28 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
       });
 
       const results = await Promise.all(emailPromises);
-      const successCount = results.filter(r => r.success).length;
-      const failCount = results.filter(r => !r.success).length;
+      const successCount = results.filter((r) => r.success).length;
+      const failCount = results.filter((r) => !r.success).length;
 
       if (successCount > 0) {
         toast.success(`Alert sent to ${successCount} recipient(s)`, {
-          description: failCount > 0 ? `${failCount} email(s) failed` : 'All emails sent successfully',
+          description:
+            failCount > 0
+              ? `${failCount} email(s) failed`
+              : "All emails sent successfully",
           icon: <Sparkles className="w-4 h-4 text-primary" />,
         });
       } else if (failCount > 0) {
-        toast.warning('Alert created but emails failed to send');
+        toast.warning("Alert created but emails failed to send");
       }
 
-      toast.success('Manual alert created successfully');
+      toast.success("Manual alert created successfully");
       setOpen(false);
-      setReason('');
-      setAlertType('normal');
+      setReason("");
+      setAlertType("normal");
     } catch (error) {
-      console.error('Error sending manual alert:', error);
-      toast.error('Failed to send manual alert');
+      console.error("Error sending manual alert:", error);
+      toast.error("Failed to send manual alert");
     } finally {
       setIsSending(false);
     }
@@ -216,35 +241,38 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
 
   const alertTypeOptions = [
     {
-      value: 'normal',
-      label: 'Normal',
-      description: 'Standard notification',
+      value: "normal",
+      label: "Normal",
+      description: "Standard notification",
       icon: Bell,
-      color: 'text-status-normal',
-      bgColor: 'bg-status-normal-bg',
+      color: "text-status-normal",
+      bgColor: "bg-status-normal-bg",
     },
     {
-      value: 'high',
-      label: 'High Priority',
-      description: 'Urgent attention needed',
+      value: "high",
+      label: "High Priority",
+      description: "Urgent attention needed",
       icon: AlertTriangle,
-      color: 'text-status-warning',
-      bgColor: 'bg-status-warning-bg',
+      color: "text-status-warning",
+      bgColor: "bg-status-warning-bg",
     },
     {
-      value: 'critical',
-      label: 'Critical',
-      description: 'Immediate action required',
+      value: "critical",
+      label: "Critical",
+      description: "Immediate action required",
       icon: AlertCircle,
-      color: 'text-status-critical',
-      bgColor: 'bg-status-critical-bg',
+      color: "text-status-critical",
+      bgColor: "bg-status-critical-bg",
     },
   ];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 border-status-warning/30 text-status-warning hover:bg-status-warning-bg hover:text-status-warning shadow-sm">
+        <Button
+          variant="outline"
+          className="h-12 px-6 rounded-xl gap-2 border-status-warning/35 text-status-warning hover:bg-status-warning-bg/70 hover:text-status-warning shadow-sm font-semibold"
+        >
           <AlertTriangle className="w-4 h-4" />
           Send Manual Alert
         </Button>
@@ -259,12 +287,16 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
               <span>Send Manual Alert</span>
               <div className="flex items-center gap-1.5 mt-1">
                 <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-xs font-normal text-muted-foreground">AI-powered email generation</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  AI-powered email generation
+                </span>
               </div>
             </div>
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Alert for <span className="font-semibold text-foreground">{babyName}</span> • Bed {bedNumber}
+            Alert for{" "}
+            <span className="font-semibold text-foreground">{babyName}</span> •
+            Bed {bedNumber}
           </DialogDescription>
         </DialogHeader>
 
@@ -278,27 +310,41 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
               <div className="grid grid-cols-5 gap-2">
                 <div className="text-center p-2 rounded-lg bg-background">
                   <Heart className="w-4 h-4 mx-auto text-red-500 mb-1" />
-                  <p className="text-sm font-bold text-foreground">{vitals.heartRate || '—'}</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {vitals.heartRate || "—"}
+                  </p>
                   <p className="text-[10px] text-muted-foreground">BPM</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background">
-                  <div className="w-4 h-4 mx-auto text-primary mb-1 flex items-center justify-center text-xs font-bold">O₂</div>
-                  <p className="text-sm font-bold text-foreground">{vitals.spo2 || '—'}%</p>
+                  <div className="w-4 h-4 mx-auto text-primary mb-1 flex items-center justify-center text-xs font-bold">
+                    O₂
+                  </div>
+                  <p className="text-sm font-bold text-foreground">
+                    {vitals.spo2 || "—"}%
+                  </p>
                   <p className="text-[10px] text-muted-foreground">SpO₂</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background">
                   <Thermometer className="w-4 h-4 mx-auto text-orange-500 mb-1" />
-                  <p className="text-sm font-bold text-foreground">{vitals.temperature || '—'}°</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {vitals.temperature || "—"}°
+                  </p>
                   <p className="text-[10px] text-muted-foreground">Temp</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background">
                   <Activity className="w-4 h-4 mx-auto text-green-500 mb-1" />
-                  <p className="text-sm font-bold text-foreground">{vitals.movement || '—'}</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {vitals.movement || "—"}
+                  </p>
                   <p className="text-[10px] text-muted-foreground">Move</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background">
-                  <div className="w-4 h-4 mx-auto text-primary mb-1 flex items-center justify-center text-[10px] font-bold">🛏️</div>
-                  <p className="text-sm font-bold text-foreground capitalize">{vitals.sleepingPosition || 'back'}</p>
+                  <div className="w-4 h-4 mx-auto text-primary mb-1 flex items-center justify-center text-[10px] font-bold">
+                    🛏️
+                  </div>
+                  <p className="text-sm font-bold text-foreground capitalize">
+                    {vitals.sleepingPosition || "back"}
+                  </p>
                   <p className="text-[10px] text-muted-foreground">Pos</p>
                 </div>
               </div>
@@ -318,21 +364,28 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
                   <label
                     key={option.value}
                     className={cn(
-                      'flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all text-center',
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all text-center",
                       alertType === option.value
                         ? `border-current ${option.bgColor} ${option.color} shadow-sm`
-                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                        : "border-border hover:border-muted-foreground/30 hover:bg-muted/30",
                     )}
                   >
                     <RadioGroupItem value={option.value} className="sr-only" />
-                    <div className={cn('p-2.5 rounded-xl', option.bgColor)}>
-                      <Icon className={cn('w-5 h-5', option.color)} />
+                    <div className={cn("p-2.5 rounded-xl", option.bgColor)}>
+                      <Icon className={cn("w-5 h-5", option.color)} />
                     </div>
                     <div>
-                      <p className={cn('font-semibold text-sm', alertType === option.value && option.color)}>
+                      <p
+                        className={cn(
+                          "font-semibold text-sm",
+                          alertType === option.value && option.color,
+                        )}
+                      >
                         {option.label}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{option.description}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {option.description}
+                      </p>
                     </div>
                   </label>
                 );
@@ -370,7 +423,9 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
                 Email Recipients
               </Label>
               <span className="text-xs text-muted-foreground">
-                {recipients.length > 0 ? `${recipients.length} configured` : 'None configured'}
+                {recipients.length > 0
+                  ? `${recipients.length} configured`
+                  : "None configured"}
               </span>
             </div>
 
@@ -391,11 +446,16 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
             {!sendToAll && recipients.length > 0 && (
               <div className="space-y-2 pl-6">
                 {recipients.map((recipient) => (
-                  <div key={recipient.id} className="flex items-center space-x-2">
+                  <div
+                    key={recipient.id}
+                    className="flex items-center space-x-2"
+                  >
                     <Checkbox
                       id={recipient.id}
                       checked={selectedRecipients.includes(recipient.email)}
-                      onCheckedChange={() => handleRecipientToggle(recipient.email)}
+                      onCheckedChange={() =>
+                        handleRecipientToggle(recipient.email)
+                      }
                     />
                     <label
                       htmlFor={recipient.id}
@@ -410,7 +470,8 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
 
             {recipients.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                No recipients configured. Add recipients in Alert Settings tab. Alert will be sent to your email.
+                No recipients configured. Add recipients in Alert Settings tab.
+                Alert will be sent to your email.
               </p>
             )}
           </div>
@@ -429,13 +490,15 @@ const ManualAlertDialog: React.FC<ManualAlertDialogProps> = ({
             onClick={handleSendAlert}
             disabled={isSending || !reason.trim()}
             className={cn(
-              'flex-1 gap-2',
-              alertType === 'critical' && 'bg-status-critical hover:bg-status-critical/90',
-              alertType === 'high' && 'bg-status-warning hover:bg-status-warning/90'
+              "flex-1 gap-2",
+              alertType === "critical" &&
+                "bg-status-critical hover:bg-status-critical/90",
+              alertType === "high" &&
+                "bg-status-warning hover:bg-status-warning/90",
             )}
           >
             {isSending ? (
-              'Sending...'
+              "Sending..."
             ) : (
               <>
                 <Send className="w-4 h-4" />

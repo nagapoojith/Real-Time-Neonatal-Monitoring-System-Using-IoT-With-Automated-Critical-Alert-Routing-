@@ -52,6 +52,22 @@ const AlertHistory = () => {
     }
   };
 
+  const renderVitalsSnapshot = (snapshot?: {
+    heartRate?: number;
+    spo2?: number;
+    temperature?: number;
+  }) => {
+    if (!snapshot) return "-";
+
+    return (
+      <div className="space-y-0.5 leading-6">
+        <div>HR {snapshot.heartRate ?? "-"}</div>
+        <div>SpO₂ {snapshot.spo2 ?? "-"}%</div>
+        <div>Temp {Number(snapshot.temperature ?? 0).toFixed(1)}°C</div>
+      </div>
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6 alert-section animate-fade-in">
@@ -107,7 +123,7 @@ const AlertHistory = () => {
           </Card>
         </div>
 
-        <Card className="card-medical overflow-hidden">
+        <Card className="card-medical no-hover-grow overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg">All Alerts</CardTitle>
           </CardHeader>
@@ -120,6 +136,12 @@ const AlertHistory = () => {
                     <TableHead>Baby</TableHead>
                     <TableHead className="hidden md:table-cell">Bed</TableHead>
                     <TableHead>Type</TableHead>
+                    <TableHead className="hidden xl:table-cell">
+                      Trigger Reason
+                    </TableHead>
+                    <TableHead className="hidden xl:table-cell">
+                      Vitals
+                    </TableHead>
                     <TableHead className="hidden lg:table-cell">
                       Message
                     </TableHead>
@@ -133,26 +155,32 @@ const AlertHistory = () => {
                 <TableBody>
                   {sortedAlerts.map((alert) => (
                     <TableRow key={alert.id}>
-                      <TableCell>
+                      <TableCell className="align-top">
                         <div className="flex items-center justify-center">
                           {getLevelIcon(alert.level)}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium align-top">
                         {alert.babyName}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                      <TableCell className="hidden md:table-cell text-muted-foreground align-top">
                         {alert.bedNumber}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top">
                         <Badge variant="outline" className="text-xs capitalize">
                           {alert.type}
                         </Badge>
                       </TableCell>
-                      <TableCell className="hidden lg:table-cell max-w-xs truncate text-muted-foreground">
+                      <TableCell className="hidden xl:table-cell max-w-sm text-muted-foreground align-top whitespace-normal break-words leading-6">
+                        {alert.triggerReason || "-"}
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell text-muted-foreground align-top min-w-[140px]">
+                        {renderVitalsSnapshot(alert.vitalsSnapshot)}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-sm text-muted-foreground align-top whitespace-normal break-words leading-6">
                         {alert.message}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           <span className="whitespace-nowrap">
@@ -162,7 +190,7 @@ const AlertHistory = () => {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top">
                         {alert.acknowledged ? (
                           <Badge
                             variant="normal"
@@ -177,7 +205,7 @@ const AlertHistory = () => {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                      <TableCell className="hidden md:table-cell text-muted-foreground align-top">
                         {alert.acknowledgedBy || "-"}
                       </TableCell>
                     </TableRow>

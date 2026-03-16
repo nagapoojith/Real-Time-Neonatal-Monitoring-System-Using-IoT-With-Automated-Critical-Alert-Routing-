@@ -254,8 +254,8 @@ const Dashboard = () => {
                       status: "normal" as const,
                     },
                     {
-                      label: "SMS Alerts",
-                      value: "Ready",
+                      label: "Alert History Logging",
+                      value: "Active",
                       status: "normal" as const,
                     },
                   ].map((item) => (

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useData } from '@/contexts/DataContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useData } from "@/contexts/DataContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,26 +13,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Trash2, AlertTriangle } from 'lucide-react';
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Trash2, AlertTriangle } from "lucide-react";
 
 interface DeleteBabyDialogProps {
   babyId: string;
   babyName: string;
 }
 
-const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName }) => {
+const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({
+  babyId,
+  babyName,
+}) => {
   const { user } = useAuth();
   const { deleteBaby } = useData();
   const navigate = useNavigate();
-  const [confirmText, setConfirmText] = useState('');
+  const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
 
   // Only doctors can delete babies
-  const canDelete = user?.role === 'doctor' || user?.role === 'senior_doctor';
+  const canDelete = user?.role === "doctor" || user?.role === "senior_doctor";
 
   if (!canDelete) {
     return null;
@@ -40,7 +43,7 @@ const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName })
 
   const handleDelete = async () => {
     if (confirmText !== babyName) {
-      toast.error('Please type the baby name correctly to confirm deletion');
+      toast.error("Please type the baby name correctly to confirm deletion");
       return;
     }
 
@@ -49,10 +52,10 @@ const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName })
       await deleteBaby(babyId);
       toast.success(`${babyName} has been removed from the system`);
       setOpen(false);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Error deleting baby:', error);
-      toast.error('Failed to delete baby record');
+      console.error("Error deleting baby:", error);
+      toast.error("Failed to delete baby record");
     } finally {
       setIsDeleting(false);
     }
@@ -61,9 +64,9 @@ const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName })
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        <Button
+          variant="outline"
+          className="h-12 px-6 rounded-xl gap-2 border-destructive/35 text-destructive hover:bg-destructive/10 hover:text-destructive font-semibold"
         >
           <Trash2 className="w-4 h-4" />
           Remove Baby
@@ -91,7 +94,9 @@ const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName })
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium text-foreground">
-                Type <span className="font-bold text-destructive">"{babyName}"</span> to confirm:
+                Type{" "}
+                <span className="font-bold text-destructive">"{babyName}"</span>{" "}
+                to confirm:
               </p>
               <Input
                 value={confirmText}
@@ -109,7 +114,7 @@ const DeleteBabyDialog: React.FC<DeleteBabyDialogProps> = ({ babyId, babyName })
             disabled={confirmText !== babyName || isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? 'Removing...' : 'Yes, Remove Baby'}
+            {isDeleting ? "Removing..." : "Yes, Remove Baby"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

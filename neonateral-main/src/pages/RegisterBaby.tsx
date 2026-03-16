@@ -243,9 +243,12 @@ const RegisterBaby = () => {
                     id="parentContact"
                     name="parentContact"
                     type="tel"
-                    placeholder="+1-555-0105"
+                    placeholder="+91 98765 43210"
                     value={formData.parentContact}
                     onChange={handleChange}
+                    inputMode="tel"
+                    pattern="^(\+91[\s-]?)?[6-9]\d{9}$"
+                    title="Enter a valid Indian mobile number, for example +91 98765 43210"
                     required
                   />
                 </div>
