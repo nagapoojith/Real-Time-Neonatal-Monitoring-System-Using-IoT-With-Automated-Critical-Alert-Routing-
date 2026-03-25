@@ -46,6 +46,35 @@ interface RouteInfo {
   hospitalName: string;
 }
 
+const EARTH_RADIUS_METERS = 6371000;
+
+const toRadians = (value: number) => (value * Math.PI) / 180;
+
+const calculateDistanceMeters = (
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number,
+) => {
+  const dLat = toRadians(toLat - fromLat);
+  const dLng = toRadians(toLng - fromLng);
+  const lat1 = toRadians(fromLat);
+  const lat2 = toRadians(toLat);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return EARTH_RADIUS_METERS * c;
+};
+
+const formatDistance = (distanceMeters: number) => {
+  if (!Number.isFinite(distanceMeters) || distanceMeters < 0) return "N/A";
+  if (distanceMeters < 1000) return `${Math.round(distanceMeters)} m`;
+  return `${(distanceMeters / 1000).toFixed(1)} km`;
+};
+
 const HospitalMap: React.FC = () => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -467,9 +496,193 @@ const HospitalMap: React.FC = () => {
     }
   }, [selectedHospital]);
 
+  const searchNearbyHospitals = useCallback(
+    async (
+      lat: number,
+      lng: number,
+      locationLabel: string,
+    ): Promise<boolean> => {
+      if (tomtomApiKey) {
+        try {
+          const hospitalSearchResponse = await supabase.functions.invoke(
+            "tomtom-proxy",
+            {
+              body: {
+                action: "poiSearch",
+                params: {
+                  query: "children hospital",
+                  lat,
+                  lon: lng,
+                  radius: 20000,
+                  limit: 12,
+                  categorySet: "7321",
+                },
+              },
+            },
+          );
+
+          if (
+            !hospitalSearchResponse.error &&
+            hospitalSearchResponse.data?.results?.length > 0
+          ) {
+            const foundHospitals: Hospital[] =
+              hospitalSearchResponse.data.results.map(
+                (result: any, index: number) => ({
+                  id: result.id || String(index + 1),
+                  name: result.poi?.name || "Hospital",
+                  address:
+                    result.address?.freeformAddress || "Address not available",
+                  distance: result.dist
+                    ? formatDistance(result.dist)
+                    : formatDistance(
+                        calculateDistanceMeters(
+                          lat,
+                          lng,
+                          result.position.lat,
+                          result.position.lon,
+                        ),
+                      ),
+                  distanceValue:
+                    result.dist ||
+                    calculateDistanceMeters(
+                      lat,
+                      lng,
+                      result.position.lat,
+                      result.position.lon,
+                    ),
+                  phone: result.poi?.phone || undefined,
+                  isOpen: true,
+                  rating: 4.0 + Math.random() * 0.8,
+                  totalRatings: Math.floor(1000 + Math.random() * 2000),
+                  lat: result.position.lat,
+                  lng: result.position.lon,
+                  placeId: result.id,
+                }),
+              );
+
+            const sortedHospitals = foundHospitals.sort(
+              (a, b) => a.distanceValue - b.distanceValue,
+            );
+            setHospitals(sortedHospitals);
+            setSelectedHospital(sortedHospitals[0]);
+            toast.success(
+              `Found ${sortedHospitals.length} hospitals near ${locationLabel}`,
+            );
+            return true;
+          }
+        } catch (error) {
+          console.error("TomTom nearby search error:", error);
+        }
+      }
+
+      try {
+        const overpassQuery = `
+          [out:json][timeout:25];
+          (
+            node(around:20000,${lat},${lng})[amenity=hospital];
+            way(around:20000,${lat},${lng})[amenity=hospital];
+            node(around:20000,${lat},${lng})[healthcare=hospital];
+            way(around:20000,${lat},${lng})[healthcare=hospital];
+          );
+          out center tags 25;
+        `;
+
+        const overpassResponse = await fetch(
+          "https://overpass-api.de/api/interpreter",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain",
+            },
+            body: overpassQuery,
+          },
+        );
+
+        if (!overpassResponse.ok) {
+          throw new Error("Overpass request failed");
+        }
+
+        const overpassData = await overpassResponse.json();
+        const elements = Array.isArray(overpassData.elements)
+          ? overpassData.elements
+          : [];
+
+        const mappedHospitals: Hospital[] = elements
+          .map((element: any, index: number) => {
+            const hospitalLat = element.lat ?? element.center?.lat;
+            const hospitalLng = element.lon ?? element.center?.lon;
+
+            if (
+              typeof hospitalLat !== "number" ||
+              typeof hospitalLng !== "number"
+            ) {
+              return null;
+            }
+
+            const distanceValue = calculateDistanceMeters(
+              lat,
+              lng,
+              hospitalLat,
+              hospitalLng,
+            );
+
+            const tags = element.tags || {};
+            const name =
+              tags.name || tags["name:en"] || tags.operator || "Hospital";
+            const addressParts = [
+              tags["addr:housenumber"],
+              tags["addr:street"],
+              tags["addr:suburb"],
+              tags["addr:city"],
+              tags["addr:postcode"],
+            ].filter(Boolean);
+
+            return {
+              id: String(element.id || index + 1),
+              name,
+              address:
+                addressParts.length > 0
+                  ? addressParts.join(", ")
+                  : "Address not available",
+              distance: formatDistance(distanceValue),
+              distanceValue,
+              phone: tags.phone || tags["contact:phone"] || undefined,
+              isOpen: true,
+              lat: hospitalLat,
+              lng: hospitalLng,
+            } satisfies Hospital;
+          })
+          .filter(Boolean) as Hospital[];
+
+        if (mappedHospitals.length > 0) {
+          const uniqueHospitals = Array.from(
+            new Map(
+              mappedHospitals.map((hospital) => [hospital.name, hospital]),
+            ).values(),
+          )
+            .sort((a, b) => a.distanceValue - b.distanceValue)
+            .slice(0, 12);
+
+          setHospitals(uniqueHospitals);
+          setSelectedHospital(uniqueHospitals[0]);
+          toast.success(
+            `Found ${uniqueHospitals.length} hospitals near ${locationLabel}`,
+          );
+          return true;
+        }
+      } catch (error) {
+        console.error("OSM nearby search error:", error);
+      }
+
+      return false;
+    },
+    [tomtomApiKey],
+  );
+
   const getCurrentLocation = useCallback(() => {
     setIsLoading(true);
     setLocationError(null);
+    clearRoute();
 
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
@@ -480,13 +693,25 @@ const HospitalMap: React.FC = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
+
+        const foundHospitals = await searchNearbyHospitals(
+          latitude,
+          longitude,
+          "your location",
+        );
+
+        if (!foundHospitals) {
+          setHospitals(fallbackHospitals);
+          setSelectedHospital(fallbackHospitals[0]);
+          toast.success(
+            "Using default hospital list. Nearby search not available right now.",
+          );
+        }
+
         setIsLoading(false);
-        setHospitals(fallbackHospitals);
-        setSelectedHospital(fallbackHospitals[0]);
-        toast.success("Location found! Showing nearby hospitals.");
       },
       (error) => {
         console.error("Geolocation error:", error);
@@ -503,7 +728,7 @@ const HospitalMap: React.FC = () => {
         maximumAge: 0,
       },
     );
-  }, []);
+  }, [searchNearbyHospitals]);
 
   const handleManualSearch = async () => {
     if (!manualLocation.trim()) {
@@ -533,54 +758,14 @@ const HospitalMap: React.FC = () => {
           const { lat, lon } = geocodeResponse.data.results[0].position;
           setUserLocation({ lat, lng: lon });
 
-          const hospitalSearchResponse = await supabase.functions.invoke(
-            "tomtom-proxy",
-            {
-              body: {
-                action: "poiSearch",
-                params: {
-                  query: "children hospital",
-                  lat,
-                  lon,
-                  radius: 10000,
-                  limit: 5,
-                  categorySet: "7321",
-                },
-              },
-            },
+          const foundHospitals = await searchNearbyHospitals(
+            lat,
+            lon,
+            `"${manualLocation}"`,
           );
 
-          if (
-            !hospitalSearchResponse.error &&
-            hospitalSearchResponse.data?.results?.length > 0
-          ) {
-            const foundHospitals: Hospital[] =
-              hospitalSearchResponse.data.results.map(
-                (result: any, index: number) => ({
-                  id: result.id || String(index + 1),
-                  name: result.poi?.name || "Hospital",
-                  address:
-                    result.address?.freeformAddress || "Address not available",
-                  distance: result.dist
-                    ? `${(result.dist / 1000).toFixed(1)} km`
-                    : "N/A",
-                  distanceValue: result.dist || 0,
-                  phone: result.poi?.phone || undefined,
-                  isOpen: true,
-                  rating: 4.0 + Math.random() * 0.8,
-                  totalRatings: Math.floor(1000 + Math.random() * 2000),
-                  lat: result.position.lat,
-                  lng: result.position.lon,
-                  placeId: result.id,
-                }),
-              );
-
-            setHospitals(foundHospitals);
-            setSelectedHospital(foundHospitals[0]);
+          if (foundHospitals) {
             setIsLoading(false);
-            toast.success(
-              `Found ${foundHospitals.length} hospitals near "${manualLocation}"`,
-            );
             return;
           }
         }
@@ -589,10 +774,43 @@ const HospitalMap: React.FC = () => {
       }
     }
 
+    try {
+      const nominatimResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(manualLocation)}`,
+      );
+
+      if (nominatimResponse.ok) {
+        const nominatimData = await nominatimResponse.json();
+
+        if (Array.isArray(nominatimData) && nominatimData.length > 0) {
+          const lat = Number(nominatimData[0].lat);
+          const lng = Number(nominatimData[0].lon);
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            setUserLocation({ lat, lng });
+            const foundHospitals = await searchNearbyHospitals(
+              lat,
+              lng,
+              `"${manualLocation}"`,
+            );
+
+            if (foundHospitals) {
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Nominatim search error:", error);
+    }
+
     setHospitals(fallbackHospitals);
     setSelectedHospital(fallbackHospitals[0]);
     setIsLoading(false);
-    toast.success(`Showing hospitals near "${manualLocation}"`);
+    toast.success(
+      `Using default hospital list for "${manualLocation}". Nearby search is currently unavailable.`,
+    );
   };
 
   const callHospital = (phone: string) => {
