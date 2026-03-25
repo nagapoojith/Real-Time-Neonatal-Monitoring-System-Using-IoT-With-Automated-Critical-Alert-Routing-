@@ -514,6 +514,14 @@
     box-shadow: var(--glow-critical);
   }
 
+  .dark .glass-card.alert-card--critical {
+    box-shadow:
+      0 0 18px rgba(255, 0, 60, 0.35),
+      0 0 40px rgba(255, 0, 60, 0.18),
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
   .dark .glass-card.alert-card--critical:hover {
     background: linear-gradient(
       180deg,
@@ -1262,13 +1270,17 @@
   0%,
   100% {
     box-shadow:
-      0 0 20px rgba(255, 0, 60, 0.15),
-      0 0 40px rgba(255, 0, 60, 0.08);
+      0 0 18px rgba(255, 0, 60, 0.4),
+      0 0 40px rgba(255, 0, 60, 0.22),
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
   50% {
     box-shadow:
-      0 0 28px rgba(255, 0, 60, 0.25),
-      0 0 56px rgba(255, 0, 60, 0.14);
+      0 0 30px rgba(255, 0, 60, 0.6),
+      0 0 60px rgba(255, 0, 60, 0.32),
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 

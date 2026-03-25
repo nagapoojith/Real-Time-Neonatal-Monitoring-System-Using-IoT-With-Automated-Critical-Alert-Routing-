@@ -155,5 +155,5 @@ coverage/
 .vscode/
 *.settings.json
 
-neonatal-main/
+
 *.env
