@@ -314,11 +314,18 @@
   }
 
   .dark .vital-card:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.16);
+
+    border-color: rgba(0, 255, 231, 0.75);
+
     box-shadow:
-      0 0 16px rgba(0, 255, 231, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 0 24px rgba(0, 255, 231, 0.55),
+      0 0 48px rgba(0, 255, 231, 0.38),
+      0 0 90px rgba(0, 255, 231, 0.22),
+      0 12px 36px rgba(0, 0, 0, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+    transform: translateY(-3px) scale(1.01);
   }
 
   .gradient-primary {
@@ -449,13 +456,18 @@
   }
 
   .dark .stat-card:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(0, 255, 231, 0.4);
+    background: rgba(255, 255, 255, 0.16);
+
+    border-color: rgba(0, 255, 231, 0.75);
+
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 35px rgba(0, 255, 231, 0.35),
-      0 0 70px rgba(0, 255, 231, 0.15),
+      0 0 24px rgba(0, 255, 231, 0.55),
+      0 0 48px rgba(0, 255, 231, 0.38),
+      0 0 90px rgba(0, 255, 231, 0.22),
+      0 12px 36px rgba(0, 0, 0, 0.38),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+    transform: translateY(-3px) scale(1.01);
   }
 
   .stat-card::before {

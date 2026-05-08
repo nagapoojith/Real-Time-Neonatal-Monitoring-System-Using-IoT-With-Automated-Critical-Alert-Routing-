@@ -14,4 +14,15 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          recharts: ["recharts"],
+          html2canvas: ["html2canvas"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 }));

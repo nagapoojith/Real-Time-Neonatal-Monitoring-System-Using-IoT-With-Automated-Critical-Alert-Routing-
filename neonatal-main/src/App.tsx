@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,25 +13,27 @@ import { DataProvider } from "@/contexts/DataContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import BabyDetail from "./pages/BabyDetail";
-import RegisterBaby from "./pages/RegisterBaby";
-import Alerts from "./pages/Alerts";
-import AlertHistory from "./pages/AlertHistory";
 import ParentLogin from "./pages/ParentLogin";
-import ParentPortal from "./pages/ParentPortal";
-import LiveMonitoring from "./pages/LiveMonitoring";
-import NICUEnvironment from "./pages/NICUEnvironment";
-import ShiftHandover from "./pages/ShiftHandover";
-import FeedingStatusPage from "./pages/FeedingStatus";
-import HealthRecords from "./pages/HealthRecords";
-import CryDetectionPage from "./pages/CryDetectionPage";
-import VoiceAssistant from "./pages/VoiceAssistant";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Lazy load heavy page components
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const BabyDetail = React.lazy(() => import("./pages/BabyDetail"));
+const RegisterBaby = React.lazy(() => import("./pages/RegisterBaby"));
+const Alerts = React.lazy(() => import("./pages/Alerts"));
+const AlertHistory = React.lazy(() => import("./pages/AlertHistory"));
+const ParentPortal = React.lazy(() => import("./pages/ParentPortal"));
+const LiveMonitoring = React.lazy(() => import("./pages/LiveMonitoring"));
+const NICUEnvironment = React.lazy(() => import("./pages/NICUEnvironment"));
+const ShiftHandover = React.lazy(() => import("./pages/ShiftHandover"));
+const FeedingStatusPage = React.lazy(() => import("./pages/FeedingStatus"));
+const HealthRecords = React.lazy(() => import("./pages/HealthRecords"));
+const CryDetectionPage = React.lazy(() => import("./pages/CryDetectionPage"));
+const VoiceAssistant = React.lazy(() => import("./pages/VoiceAssistant"));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,6 +52,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   return <>{children}</>;
 };
+
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -130,7 +139,9 @@ const AppRoutes = () => {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Suspense fallback={<LoadingFallback />}>
+              <Dashboard />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -138,7 +149,9 @@ const AppRoutes = () => {
         path="/baby/:id"
         element={
           <ProtectedRoute>
-            <BabyDetail />
+            <Suspense fallback={<LoadingFallback />}>
+              <BabyDetail />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -146,7 +159,9 @@ const AppRoutes = () => {
         path="/register"
         element={
           <ProtectedRoute>
-            <RegisterBaby />
+            <Suspense fallback={<LoadingFallback />}>
+              <RegisterBaby />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -154,7 +169,9 @@ const AppRoutes = () => {
         path="/alerts"
         element={
           <ProtectedRoute>
-            <Alerts />
+            <Suspense fallback={<LoadingFallback />}>
+              <Alerts />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -162,7 +179,9 @@ const AppRoutes = () => {
         path="/history"
         element={
           <ProtectedRoute>
-            <AlertHistory />
+            <Suspense fallback={<LoadingFallback />}>
+              <AlertHistory />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -175,12 +194,21 @@ const AppRoutes = () => {
         path="/parent/login"
         element={<Navigate to="/parent/portal" replace />}
       />
-      <Route path="/parent/portal" element={<ParentPortal />} />
+      <Route
+        path="/parent/portal"
+        element={
+          <Suspense fallback={<LoadingFallback />}>
+            <ParentPortal />
+          </Suspense>
+        }
+      />
       <Route
         path="/live-monitoring"
         element={
           <ProtectedRoute>
-            <LiveMonitoring />
+            <Suspense fallback={<LoadingFallback />}>
+              <LiveMonitoring />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -189,7 +217,9 @@ const AppRoutes = () => {
         path="/cry-detection"
         element={
           <ProtectedRoute>
-            <CryDetectionPage />
+            <Suspense fallback={<LoadingFallback />}>
+              <CryDetectionPage />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -197,7 +227,9 @@ const AppRoutes = () => {
         path="/nicu-environment"
         element={
           <ProtectedRoute>
-            <NICUEnvironment />
+            <Suspense fallback={<LoadingFallback />}>
+              <NICUEnvironment />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -205,7 +237,9 @@ const AppRoutes = () => {
         path="/shift-handover"
         element={
           <ProtectedRoute>
-            <ShiftHandover />
+            <Suspense fallback={<LoadingFallback />}>
+              <ShiftHandover />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -213,7 +247,9 @@ const AppRoutes = () => {
         path="/feeding-status"
         element={
           <ProtectedRoute>
-            <FeedingStatusPage />
+            <Suspense fallback={<LoadingFallback />}>
+              <FeedingStatusPage />
+            </Suspense>
           </ProtectedRoute>
         }
       />
@@ -221,11 +257,20 @@ const AppRoutes = () => {
         path="/health-records"
         element={
           <ProtectedRoute>
-            <HealthRecords />
+            <Suspense fallback={<LoadingFallback />}>
+              <HealthRecords />
+            </Suspense>
           </ProtectedRoute>
         }
       />
-      <Route path="/voice-assistant" element={<VoiceAssistant />} />
+      <Route
+        path="/voice-assistant"
+        element={
+          <Suspense fallback={<LoadingFallback />}>
+            <VoiceAssistant />
+          </Suspense>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
