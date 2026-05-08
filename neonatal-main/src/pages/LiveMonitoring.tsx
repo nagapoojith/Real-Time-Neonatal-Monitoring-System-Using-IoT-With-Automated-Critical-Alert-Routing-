@@ -26,11 +26,18 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import {
+  createEmptyVitals,
+  fetchThingSpeakFeed,
+  HISTORY_COUNT,
+  mapHistoryEntries,
+  type ChartDataPoint,
+  type ThingSpeakResponse,
+  type VitalData,
+  validateAndParseEntry,
+} from "@/lib/thingspeak";
 
-const THINGSPEAK_CHANNEL_ID = "3299978";
-const THINGSPEAK_API_KEY = "FW0N2ZJVIPXBVSIQ";
 const REFRESH_INTERVAL = 15000;
-const HISTORY_COUNT = 100;
 const chartGridColor = "hsl(var(--border))";
 const chartTickColor = "hsl(var(--muted-foreground))";
 const chartTooltipStyle = {
@@ -42,60 +49,12 @@ const chartTooltipStyle = {
   color: "hsl(var(--foreground))",
 };
 
-interface ThingSpeakEntry {
-  created_at: string;
-  entry_id: number;
-  field1: string | null;
-  field2: string | null;
-  field3: string | null;
-  field4: string | null;
-  field5: string | null;
-  field6: string | null;
-}
-
-interface ThingSpeakResponse {
-  channel: {
-    id: number;
-    name: string;
-    description: string;
-    created_at: string;
-    updated_at: string;
-    last_entry_id: number;
-  };
-  feeds: ThingSpeakEntry[];
-}
-
-interface VitalData {
-  heartRate: number | null;
-  spo2: number | null;
-  temperature: number | null;
-  incubatorHumidity: number | null;
-  incubatorTemperature: number | null;
-  timestamp: string | null;
-  entryId: number | null;
-}
-
-interface ChartDataPoint {
-  time: string;
-  fullTime: string;
-  heartRate: number | null;
-  spo2: number | null;
-  temperature: number | null;
-}
-
 type DeviceStatus = "online" | "offline" | "waiting";
 
 const LiveMonitoring: React.FC = () => {
   const location = useLocation();
-  const [currentVitals, setCurrentVitals] = useState<VitalData>({
-    heartRate: null,
-    spo2: null,
-    temperature: null,
-    incubatorHumidity: null,
-    incubatorTemperature: null,
-    timestamp: null,
-    entryId: null,
-  });
+  const [currentVitals, setCurrentVitals] =
+    useState<VitalData>(createEmptyVitals());
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>("waiting");
   const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
@@ -105,70 +64,16 @@ const LiveMonitoring: React.FC = () => {
   const [chartAnimationNonce, setChartAnimationNonce] = useState(0);
   const hasPlayedOpenAnimation = useRef(false);
 
-  const validateAndParseEntry = (entry: ThingSpeakEntry) => {
-    const parseField = (val: string | null) => (val ? parseFloat(val) : null);
-
-    const hrRaw = parseField(entry.field1);
-    const spo2Raw = parseField(entry.field2);
-    // field3 is SpO2 Min - not used
-    const tempRaw = parseField(entry.field4); // field4 = Body Temp (°C)
-    const incTempRaw = parseField(entry.field5); // field5 = Room/Incubator Temp (°C)
-    const incHumRaw = parseField(entry.field6); // field6 = Humidity (%)
-
-    return {
-      heartRate:
-        hrRaw !== null && !isNaN(hrRaw) && hrRaw > 0 && hrRaw < 300
-          ? hrRaw
-          : null,
-      spo2:
-        spo2Raw !== null && !isNaN(spo2Raw) && spo2Raw > 0 && spo2Raw <= 100
-          ? spo2Raw
-          : null,
-      temperature:
-        tempRaw !== null && !isNaN(tempRaw) && tempRaw > 20 && tempRaw < 45
-          ? tempRaw
-          : null,
-      incubatorHumidity:
-        incHumRaw !== null &&
-        !isNaN(incHumRaw) &&
-        incHumRaw >= 0 &&
-        incHumRaw <= 100
-          ? incHumRaw
-          : null,
-      incubatorTemperature:
-        incTempRaw !== null &&
-        !isNaN(incTempRaw) &&
-        incTempRaw > -10 &&
-        incTempRaw < 60
-          ? incTempRaw
-          : null,
-    };
-  };
-
   const fetchLatestData = useCallback(async () => {
     try {
       setIsRefreshing(true);
       setError(null);
 
-      const latestUrl = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
-      const latestResponse = await fetch(latestUrl);
-
-      if (!latestResponse.ok)
-        throw new Error("Failed to fetch from ThingSpeak");
-
-      const latestData: ThingSpeakResponse = await latestResponse.json();
+      const latestData: ThingSpeakResponse = await fetchThingSpeakFeed(1);
 
       if (!latestData.feeds || latestData.feeds.length === 0) {
         setDeviceStatus("offline");
-        setCurrentVitals({
-          heartRate: null,
-          spo2: null,
-          temperature: null,
-          incubatorHumidity: null,
-          incubatorTemperature: null,
-          timestamp: null,
-          entryId: null,
-        });
+        setCurrentVitals(createEmptyVitals());
         return;
       }
 
@@ -204,31 +109,14 @@ const LiveMonitoring: React.FC = () => {
 
   const fetchHistoricalData = useCallback(async () => {
     try {
-      const historyUrl = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=${HISTORY_COUNT}`;
-      const historyResponse = await fetch(historyUrl);
-      if (!historyResponse.ok) return;
-
-      const historyData: ThingSpeakResponse = await historyResponse.json();
+      const historyData: ThingSpeakResponse =
+        await fetchThingSpeakFeed(HISTORY_COUNT);
       if (!historyData.feeds || historyData.feeds.length === 0) {
         setChartData([]);
         return;
       }
 
-      const formattedData: ChartDataPoint[] = historyData.feeds.map((entry) => {
-        const timestamp = new Date(entry.created_at);
-        const parsed = validateAndParseEntry(entry);
-        return {
-          time: timestamp.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          fullTime: timestamp.toLocaleString(),
-          heartRate: parsed.heartRate,
-          spo2: parsed.spo2,
-          temperature: parsed.temperature,
-        };
-      });
-      setChartData(formattedData);
+      setChartData(mapHistoryEntries(historyData.feeds));
     } catch (err) {
       console.error("Error fetching historical data:", err);
     }
