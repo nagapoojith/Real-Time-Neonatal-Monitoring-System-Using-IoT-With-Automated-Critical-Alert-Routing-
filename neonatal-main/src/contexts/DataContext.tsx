@@ -312,6 +312,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [babies, setBabies] = useState<Baby[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [, setVitalsTick] = useState(0);
   const { session, user } = useAuth();
   const alertsEnabledRef = useRef<Record<string, boolean>>({});
 
@@ -645,6 +646,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           }
         }
       });
+      setVitalsTick((tick) => tick + 1);
     }, 3000);
 
     return () => clearInterval(interval);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useData, Baby, VitalSigns } from "@/contexts/DataContext";
 import { Badge } from "@/components/ui/badge";
@@ -22,16 +22,7 @@ interface BabyCardProps {
 
 const BabyCard: React.FC<BabyCardProps> = ({ baby }) => {
   const { getCurrentVitals } = useData();
-  const [vitals, setVitals] = useState<VitalSigns | null>(null);
-
-  useEffect(() => {
-    const updateVitals = () => {
-      setVitals(getCurrentVitals(baby.id));
-    };
-    updateVitals();
-    const interval = setInterval(updateVitals, 3000);
-    return () => clearInterval(interval);
-  }, [baby.id, getCurrentVitals]);
+  const vitals = getCurrentVitals(baby.id);
 
   const statusConfig = {
     critical: {
