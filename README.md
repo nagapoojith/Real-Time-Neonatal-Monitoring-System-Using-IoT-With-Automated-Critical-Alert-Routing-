@@ -2,7 +2,6 @@
 
 <!-- Add a logo at neonateral-main/public/logo.png and uncomment the line below -->
 <!-- <img src="neonateral-main/public/logo.png" alt="NeoGuard Logo" width="140" /> -->
-
 # 🍼 NeoGuard
 
 **IoT-Powered Neonatal Intensive Care Monitoring System**
@@ -1130,5 +1129,4 @@ If NeoGuard has been useful for your research or project, please consider giving
 **Built with ❤️ for safer neonatal care and stronger family connections**
 
 [Report Bug](https://github.com/yourusername/neoguard/issues) · [Request Feature](https://github.com/yourusername/neoguard/issues) · [Clinical Disclaimer](#️-clinical-disclaimer)
-
 </div>
